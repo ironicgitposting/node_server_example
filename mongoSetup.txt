@@ -1,0 +1,52 @@
+Mongodb v3.4
+
+You need to do the following to create a secure database:
+
+Make sure the user starting the process has permissions and that the directories exist (/data/db in this case).
+
+1) Start MongoDB without access control.
+
+mongod --port 27017 --dbpath /data/db
+2) Connect to the instance.
+
+mongo --port 27017
+3) Create the user administrator (in the admin authentication database).
+
+use admin
+db.createUser(
+  {
+    user: "myUserAdmin",
+    pwd: "abc123",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+4) Re-start the MongoDB instance with access control.
+
+mongod --auth --port 27017 --dbpath /data/db
+5) Connect and authenticate as the user administrator.
+
+mongo --port 27017 -u "myUserAdmin" -p "abc123" --authenticationDatabase "admin"
+6) Create additional users as needed for your deployment (e.g. in the test authentication database).
+
+use test
+db.createUser(
+  {
+    user: "myTester",
+    pwd: "xyz123",
+    roles: [ { role: "readWrite", db: "test" },
+             { role: "read", db: "reporting" } ]
+  }
+)
+7) Connect and authenticate as myTester.
+
+mongo --port 27017 -u "myTester" -p "xyz123" --authenticationDatabase "test"
+
+nodejs connection string:
+
+mongodb://root:toor@localhost:27017/course?authSource=admin
+
+var connectionString = "mongodb://root:toor@localhost:27017/course?authSource=admin";
+
+//take database name from connection string
+var _databaseName = MongoUrl.Create(connectionString).DatabaseName;
+var _server = MongoServer.Create(connectionString);
